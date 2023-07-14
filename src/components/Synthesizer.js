@@ -1,10 +1,41 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import * as Tone from "tone";
 
 const Synthesizer = () => {
-  const [synth, setSynth] = useState(null);
-  const [pressedKeys, setPressedKeys] = useState([]);
   const containerRef = useRef(null);
+  const activeKeysRef = useRef(new Set());
+  const polySynthRef = useRef();
+
+  useEffect(() => {
+    polySynthRef.current = new Tone.PolySynth().toDestination();
+
+    const handleKeyDown = (event) => {
+      const keyInfo = keys.find((key) => key.keyPress === event.key);
+      if (keyInfo && !activeKeysRef.current.has(keyInfo.note)) {
+        event.preventDefault();
+        polySynthRef.current.triggerAttack(keyInfo.note);
+        activeKeysRef.current.add(keyInfo.note);
+      }
+    };
+
+    const handleKeyUp = (event) => {
+      const keyInfo = keys.find((key) => key.keyPress === event.key);
+      if (keyInfo && activeKeysRef.current.has(keyInfo.note)) {
+        polySynthRef.current.triggerRelease(keyInfo.note);
+        activeKeysRef.current.delete(keyInfo.note);
+      }
+    };
+
+    const container = containerRef.current;
+    container.addEventListener("keydown", handleKeyDown);
+    container.addEventListener("keyup", handleKeyUp);
+
+    return () => {
+      container.removeEventListener("keydown", handleKeyDown);
+      container.removeEventListener("keyup", handleKeyUp);
+      polySynthRef.current.dispose();
+    };
+  }, []);
 
   const keys = [
     { note: "c4", keyPress: "a", class: "whiteKeys" },
@@ -24,56 +55,8 @@ const Synthesizer = () => {
     // { note: "c5", keyPress: "k", class: "whiteKeys" },
   ];
 
-  useEffect(() => {
-    const newSynth = new Tone.PolySynth().toDestination();
-    setSynth(newSynth);
-
-    return () => {
-      newSynth.dispose();
-    };
-  }, []);
-
-  const handlePlay = (note) => {
-    synth.triggerAttackRelease(note, "8n");
-  };
-
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      const keyInfo = keys.find((key) => key.keyPress === event.key);
-      if (keyInfo) {
-        event.preventDefault();
-        handlePlay(keyInfo.note);
-        setPressedKeys((prevKeys) => [...prevKeys, keyInfo.keyPress]);
-      }
-    };
-
-    const handleKeyUp = (event) => {
-      const keyInfo = keys.find((key) => key.keyPress === event.key);
-      if (keyInfo) {
-        setPressedKeys((prevKeys) =>
-          prevKeys.filter((key) => key !== keyInfo.keyPress)
-        );
-        if (pressedKeys.length === 1) {
-          synth.triggerRelease();
-        }
-      }
-    };
-
-    const container = containerRef.current;
-    container.addEventListener("keydown", handleKeyDown);
-    container.addEventListener("keyup", handleKeyUp);
-
-    // Focus the container div when the component mounts
-    container.focus();
-
-    return () => {
-      container.removeEventListener("keydown", handleKeyDown);
-      container.removeEventListener("keyup", handleKeyUp);
-    };
-  }, [keys, pressedKeys, synth, handlePlay]);
-
   const clickKey = (note) => {
-    synth.triggerAttackRelease(note, "2n");
+    polySynthRef.current.triggerAttackRelease(note, "2n");
   };
 
   return (
