@@ -7,29 +7,35 @@ const Synthesizer = () => {
   const containerRef = useRef(null);
 
   const keys = [
-    { note: "c4", keyPress: "a" },
-    { note: "c#4", keyPress: "w" },
-    { note: "d4", keyPress: "s" },
-    { note: "d#4", keyPress: "e" },
-    { note: "e4", keyPress: "d" },
-    { note: "f4", keyPress: "f" },
-    { note: "f#4", keyPress: "t" },
-    { note: "g4", keyPress: "g" },
-    { note: "g#4", keyPress: "y" },
-    { note: "a4", keyPress: "h" },
-    { note: "a#4", keyPress: "u" },
-    { note: "b4", keyPress: "j" },
-    { note: "c5", keyPress: "k" },
+    { note: "c4", keyPress: "a", class: "whiteKeys" },
+    { note: "c#4", keyPress: "w", class: "blackKeys" },
+    { note: "d4", keyPress: "s", class: "whiteKeys" },
+    { note: "d#4", keyPress: "e", class: "blackKeys" },
+    { note: "e4", keyPress: "d", class: "whiteKeys" },
+    { note: null, keyPress: null, class: "blackKeys" },
+    { note: "f4", keyPress: "f", class: "whiteKeys" },
+    { note: "f#4", keyPress: "t", class: "blackKeys" },
+    { note: "g4", keyPress: "g", class: "whiteKeys" },
+    { note: "g#4", keyPress: "y", class: "blackKeys" },
+    { note: "a4", keyPress: "h", class: "whiteKeys" },
+    { note: "a#4", keyPress: "u", class: "blackKeys" },
+    { note: "b4", keyPress: "j", class: "whiteKeys" },
+    { note: null, keyPress: null, class: "blackKeys" },
+    // { note: "c5", keyPress: "k", class: "whiteKeys" },
   ];
 
   useEffect(() => {
-    const newSynth = new Tone.Synth().toDestination();
+    const newSynth = new Tone.PolySynth().toDestination();
     setSynth(newSynth);
 
     return () => {
       newSynth.dispose();
     };
   }, []);
+
+  const handlePlay = (note) => {
+    synth.triggerAttackRelease(note, "8n");
+  };
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -64,20 +70,29 @@ const Synthesizer = () => {
       container.removeEventListener("keydown", handleKeyDown);
       container.removeEventListener("keyup", handleKeyUp);
     };
-  }, [keys, pressedKeys, synth]);
+  }, [keys, pressedKeys, synth, handlePlay]);
 
-  const handlePlay = (note) => {
-    synth.triggerAttack(note);
+  const clickKey = (note) => {
+    synth.triggerAttackRelease(note, "2n");
   };
 
   return (
-    <div ref={containerRef} tabIndex={0}>
-      <h1>Synthesizer</h1>
-      {keys.map((keyInfo) => (
-        <div className="note" key={keyInfo.note}>
-          <button>{keyInfo.note}</button>
-        </div>
-      ))}
+    <div className="piano" ref={containerRef} tabIndex={0}>
+      <div className="pianoCont">
+        {keys.map((keyInfo) => (
+          <div className="note" key={keyInfo.note}>
+            <button
+              className={`${keyInfo.class} pianoKey ${
+                keyInfo.note === null ? "hideKey" : null
+              }`}
+              id={keyInfo.note}
+              onClick={() =>
+                clickKey(keyInfo.note === null ? "" : keyInfo.note)
+              }
+            ></button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

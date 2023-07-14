@@ -1,0 +1,48 @@
+.piano {
+  background: #71edc4;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  .pianoCont {
+    width: 175px;
+    height: 150px;
+    background: #191919;
+    border-radius: 10px;
+    padding: 5px;
+    position: relative;
+    display: flex;
+    justify-content: space-evenly;
+    .pianoKey {
+      height: 50px;
+      width: 25px;
+      border: 1px solid black;
+      background: transparent;
+    }
+    .whiteKeys {
+      position: absolute;
+      bottom: 0;
+      height: 90px;
+      margin-left: -8px;
+      background: white;
+    }
+    .blackKeys {
+      position: absolute;
+      top: 0;
+      margin: 0;
+      margin-top: 60px;
+      margin-left: -5px;
+      width: 10px;
+      background: black;
+      z-index: 2;
+    }
+    .hideKey {
+      background: transparent;
+      border: none;
+    }
+    #e4 {
+      margin-right: 20px;
+    }
+  }
+}
